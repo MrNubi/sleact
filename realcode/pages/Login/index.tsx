@@ -33,7 +33,7 @@ const Login = () => {
         )
         .then((response) => {
           mutate(response.data);
-          console.log('로그인 성공', response);
+          console.log('로그인 성공', data);
         })
         .catch((error) => {
           setLogInError(error.response?.data?.statusCode === 401);
@@ -47,7 +47,8 @@ const Login = () => {
   // }
 
   if (data) {
-    return <Redirect to="/workspace/sleact/channel" />;
+    console.log('datacheck1: ', data);
+    return <Redirect to="/workspace/channel" />;
   }
 
   return (
