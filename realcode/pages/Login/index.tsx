@@ -45,7 +45,7 @@ const Login = () => {
   // if (data === undefined) {
   //   return <div>로딩중...</div>;
   // }
-
+  console.log('datacheck login f: ', data);
   if (data) {
     console.log('datacheck login: ', data);
     return <Redirect to="/workspace/channel" />;
