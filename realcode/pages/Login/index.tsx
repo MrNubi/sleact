@@ -47,7 +47,7 @@ const Login = () => {
   // }
 
   if (data) {
-    console.log('datacheck1: ', data);
+    console.log('datacheck login: ', data);
     return <Redirect to="/workspace/channel" />;
   }
 

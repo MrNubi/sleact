@@ -1,10 +1,13 @@
 import useInput from '../../hooks/useInput';
 import axios, { AxiosResponse } from 'axios';
 import React, { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } from './styles';
-
+import useSWR from 'swr';
+import fetcher from '../../utills/fetcher';
 const SignUp = () => {
+  const { data, error, mutate } = useSWR('/api/users', fetcher);
+
   const [email, onChangeEmail, setEmail] = useInput('');
   const [nickname, onChangeNickname, setNickname] = useInput('');
   const [password, setPassword] = useState('');
@@ -73,6 +76,11 @@ const SignUp = () => {
   // useCallback 함수는 자체적으로 [email, nickname, password, passwordCheck] 안의 값이
   //바뀌기 전 까지 함수의 결과값을 캐싱하고있음
   //[] 안에는 함수 기준 외부 함수만, 변화를 감지시켜야 할 것들만 잘 골라서 쓰기
+
+  if (data) {
+    console.log('datacheck sign: ', data);
+    return <Redirect to="/workspace/channel" />;
+  }
 
   return (
     <div id="container">
