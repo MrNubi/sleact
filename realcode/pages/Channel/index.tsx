@@ -1,10 +1,10 @@
-import Workspace from '../../layouts/Workspace';
 import React from 'react';
+import { Container, Header } from './styles';
 const Channel = () => {
   return (
-    <Workspace>
-      <div> 여기는 채널태그 </div>
-    </Workspace>
+    <Container>
+      <Header> 채널!</Header>
+    </Container>
   );
 };
 export default Channel;
