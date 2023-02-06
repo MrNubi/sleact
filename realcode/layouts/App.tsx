@@ -3,8 +3,9 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 
 import loadable from '@loadable/component';
 
-const LogIn = loadable(() => import('@pages/Login'));
-const SignUp = loadable(() => import('@pages/SignUp'));
+const LogIn = loadable(() => import('../pages/Login'));
+const SignUp = loadable(() => import('../pages/SignUp'));
+const Channel = loadable(() => import('../pages/Channel'));
 // 이러면 알아서 코드 스플리팅 하고 알아서 불러옴
 // 동적으로 import 된다는 뜻, 해당 코드에 접근하는 순간은 느려질 수도 있지만, 초기속도는 굉장히 개선됨
 
@@ -14,6 +15,7 @@ const App = () => {
       <Redirect exact path="/" to="/Login" />
       <Route path="/login" component={LogIn} />
       <Route path="/signup" component={SignUp} />
+      <Route path="/workspace/channel" component={Channel} />
     </Switch>
   );
 

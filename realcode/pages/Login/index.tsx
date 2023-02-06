@@ -1,4 +1,4 @@
-import useInput from '@hooks/useInput';
+import useInput from '../../hooks/useInput';
 import axios from 'axios';
 import React, { useCallback, useState } from 'react';
 import { Link, Redirect } from 'react-router-dom';
@@ -6,8 +6,16 @@ import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } fro
 import useSWR from 'swr';
 import fetcher from '../../utills/fetcher';
 const Login = () => {
-  const { data, error, mutate } = useSWR('/api/users', fetcher);
+  const { data, error, mutate } = useSWR('/api/users', fetcher, {
+    dedupingInterval: 10000, // 100초 안에는 호출 보내도 캐시값안에서 처리
+    //focusThrottleInterval  : 이 시간 범위 동안 단 한 번만 갱신,즉 중복 갱신요청 씹음
+    //errorRetryInterval : 에러시 재시도 기간, 입력값 이후 다시 보냄,
+    //loadingTimeout : 특정 시간 지나면 onLoadingSlow 이벤트를 트리거, 화면에 로딩이 지연되니 이따 오라는 식의 메세지 띄울 수 있음
+    //errorRetryCount: errorRetryInterval이 시되하는 횟수의 최대값, 무한하면 서버에 디도스 넣을 수도 있기 때문(ex. 수강신청 서버폭파)
+  });
   //swr을 써서 쿠키 저장해주려고, post요청후에 get요청 한번 더보내 줄 예정
+  //revalidate: mutate()로 대체
+
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
@@ -24,6 +32,7 @@ const Login = () => {
           },
         )
         .then((response) => {
+          mutate(response.data);
           console.log('로그인 성공', response);
         })
         .catch((error) => {
@@ -37,9 +46,9 @@ const Login = () => {
   //   return <div>로딩중...</div>;
   // }
 
-  // if (data) {
-  //   return <Redirect to="/workspace/sleact/channel/일반" />;
-  // }
+  if (data) {
+    return <Redirect to="/workspace/sleact/channel" />;
+  }
 
   return (
     <div id="container">

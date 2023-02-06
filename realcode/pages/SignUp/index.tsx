@@ -1,4 +1,4 @@
-import useInput from '@hooks/useInput';
+import useInput from '../../hooks/useInput';
 import axios, { AxiosResponse } from 'axios';
 import React, { useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
