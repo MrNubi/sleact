@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
 
 import App from './layouts/App';
+import { SWRConfig } from 'swr';
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL =

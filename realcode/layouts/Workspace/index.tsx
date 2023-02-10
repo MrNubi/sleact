@@ -1,8 +1,8 @@
 import Menu from '../../components/Menu';
 import loadable from '@loadable/component';
 import axios from 'axios';
-import React, { FC, useCallback, useEffect, useState } from 'react';
-import { Redirect, Route, Switch } from 'react-router';
+import React, { useCallback, useState, VFC } from 'react';
+import { Route, Switch } from 'react-router';
 import useSWR from 'swr';
 import fetcher from '../../utills/fetcher';
 import {
@@ -21,17 +21,42 @@ import {
   Workspaces,
   WorkspaceWrapper,
 } from '../Workspace/styles';
+import { IUser } from '../../typings/db';
+import { Link } from 'react-router-dom';
+import Modal from '@components/Modal';
+import { Button, Input, Label } from '@pages/Login/styles';
+import useInput from '@hooks/useInput';
+import { toast } from 'react-toastify';
 
 const Channel = loadable(() => import('../../pages/Channel'));
 const DirectMessage = loadable(() => import('../../pages/DirectMessage'));
 
-const Workspace: FC = ({ children }) => {
-  const { data, error, mutate } = useSWR('/api/users', fetcher, {
+const Workspace: VFC = () => {
+  const {
+    data: UserData,
+    error,
+    mutate,
+  } = useSWR<IUser | false>('/api/users', fetcher, {
     dedupingInterval: 2000,
-    errorRetryCount: 10,
   });
 
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [newWorkspace, onChangeNewWorkspace, setNewWorkpsace] = useInput('');
+  const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
+
+  const onClickUserProfile = useCallback((e) => {
+    e.stopPropagation();
+    setShowUserMenu((prev) => !prev);
+  }, []);
+
+  const onClickCreateWorkspace = useCallback(() => {
+    setShowCreateWorkspaceModal(true);
+  }, []);
+
+  console.log('showUserMenu3 :', showUserMenu);
+
+  console.log('UserData LastCheck: ', UserData);
 
   const onLogout = useCallback(() => {
     axios
@@ -39,27 +64,55 @@ const Workspace: FC = ({ children }) => {
         withCredentials: true,
       })
       .then((response) => {
-        console.log('앞data : ', data);
         mutate(response.data, false);
-        console.log('rd:: ', response.data);
-        console.log('뒤data : ', data);
+        console.log('onLogOut :', response.data);
+      })
+      .catch((error) => {
+        alert(error.response.data ? error.response.data : '애러 캐치 실패');
       });
   }, []);
-
-  const onClickUserProfile = useCallback(() => {
-    console.log('showUserMenu :', showUserMenu);
-    setShowUserMenu((prev) => !prev);
-
-    console.log('showUserMenu2 :', showUserMenu);
+  const onCloseModal = useCallback(() => {
+    setShowCreateWorkspaceModal(false);
   }, []);
-  console.log('showUserMenu3 :', showUserMenu);
-  console.log('data check workspace: ', data);
+
+  const onCreateWorkspace = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (!newWorkspace || !newWorkspace.trim()) return;
+      if (!newUrl || !newUrl.trim()) return;
+      axios
+        .post(
+          '/api/workspaces',
+          {
+            workspace: newWorkspace,
+            url: newUrl,
+          },
+          {
+            withCredentials: true,
+          },
+        )
+        .then((response) => {
+          console.log('modalData :', response);
+          mutate();
+
+          setShowCreateWorkspaceModal(false);
+          setNewWorkpsace('');
+          setNewUrl('');
+          console.log('data check CreateWS: ', UserData);
+        })
+        .catch((error) => {
+          console.dir(error);
+          toast.error(error.response?.data, { position: 'bottom-center' });
+        });
+    },
+    [newWorkspace, newUrl],
+  );
 
   // if (!data) {
   //   console.log('data check back to login: ', data);
   //   return <Redirect to="/login" />;
   // }
-
+  console.log(' :', UserData);
   return (
     <div>
       <Header>
@@ -70,7 +123,7 @@ const Workspace: FC = ({ children }) => {
               <ProfileModal>
                 <img src="../../img/leaf_toy.png" />
                 <div>
-                  <span id="profile-name">닉네임</span>
+                  <span id="profile-name">{UserData ? UserData.nickname : 'false'}</span>
                   <span id="profile-active">Active</span>
                 </div>
               </ProfileModal>
@@ -81,7 +134,17 @@ const Workspace: FC = ({ children }) => {
       </Header>
 
       <WorkspaceWrapper>
-        <Workspaces>workspaces</Workspaces>
+        <Workspaces>
+          {UserData !== false &&
+            UserData?.Workspaces?.map((ws) => {
+              return (
+                <Link key={ws.id} to={`/workspace/${ws.id}/channel/일반`}>
+                  <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
+                </Link>
+              );
+            })}
+          <AddButton onClick={onClickCreateWorkspace}>+</AddButton>
+        </Workspaces>
         <Channels>
           <WorkspaceName>Select</WorkspaceName>
           <MenuScroll>menuScroll</MenuScroll>
@@ -93,6 +156,19 @@ const Workspace: FC = ({ children }) => {
           </Switch>
         </Chats>
       </WorkspaceWrapper>
+      <Modal show={showCreateWorkspaceModal} onCloseModal={onCloseModal}>
+        <form onSubmit={onCreateWorkspace}>
+          <Label id="workspace-label">
+            <span>workspace 이름</span>
+            <Input id="workspace" value={newWorkspace} onChange={onChangeNewWorkspace}></Input>
+          </Label>
+          <Label id="workspace-url-label">
+            <span>workspace url</span>
+            <Input id="workspace" value={newUrl} onChange={onChangeNewUrl}></Input>
+          </Label>
+          <Button type="submit">생성하기</Button>
+        </form>
+      </Modal>
     </div>
   );
 };

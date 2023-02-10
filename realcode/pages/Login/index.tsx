@@ -5,8 +5,13 @@ import { Link, Redirect } from 'react-router-dom';
 import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } from './styles';
 import useSWR from 'swr';
 import fetcher from '../../utills/fetcher';
+import { IUser } from '../../typings/db';
 const Login = () => {
-  const { data, error, mutate } = useSWR('/api/users', fetcher, {
+  const {
+    data: LoginData,
+    error,
+    mutate,
+  } = useSWR<IUser[]>('/api/users', fetcher, {
     dedupingInterval: 10000, // 100초 안에는 호출 보내도 캐시값안에서 처리
     //focusThrottleInterval  : 이 시간 범위 동안 단 한 번만 갱신,즉 중복 갱신요청 씹음
     //errorRetryInterval : 에러시 재시도 기간, 입력값 이후 다시 보냄,
@@ -33,7 +38,8 @@ const Login = () => {
         )
         .then((response) => {
           mutate(response.data);
-          console.log('로그인 성공', data);
+          console.log('로그인 성공', response.data);
+          console.log('로그인 성공data', LoginData);
         })
         .catch((error) => {
           setLogInError(error.response?.data?.statusCode === 401);
@@ -45,9 +51,9 @@ const Login = () => {
   // if (data === undefined) {
   //   return <div>로딩중...</div>;
   // }
-  console.log('datacheck login f: ', data);
-  if (data) {
-    console.log('datacheck login: ', data);
+  console.log('datacheck login out: ', LoginData);
+  if (LoginData) {
+    console.log('datacheck login in: ', LoginData);
     return <Redirect to="/workspace/channel" />;
   }
 
