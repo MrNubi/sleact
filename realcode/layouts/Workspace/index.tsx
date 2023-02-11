@@ -27,6 +27,7 @@ import Modal from '@components/Modal';
 import { Button, Input, Label } from '@pages/Login/styles';
 import useInput from '@hooks/useInput';
 import { toast } from 'react-toastify';
+import CreateChannelModal from '../../components/CreateChannelModal';
 
 const Channel = loadable(() => import('../../pages/Channel'));
 const DirectMessage = loadable(() => import('../../pages/DirectMessage'));
@@ -36,12 +37,14 @@ const Workspace: VFC = () => {
     data: UserData,
     error,
     mutate,
-  } = useSWR<IUser | false>('/api/users', fetcher, {
+  } = useSWR<IUser>('/api/users', fetcher, {
     dedupingInterval: 2000,
   });
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [showWorkspacesModal, setShowWorkspacesModal] = useState(false);
+  const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkpsace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
 
@@ -71,8 +74,18 @@ const Workspace: VFC = () => {
         alert(error.response.data ? error.response.data : '애러 캐치 실패');
       });
   }, []);
+
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
+    setShowCreateChannelModal(false);
+  }, []);
+
+  const onClickAddChannel = useCallback(() => {
+    setShowCreateChannelModal(true);
+  }, []);
+
+  const toggleWorkspaceModal = useCallback(() => {
+    setShowWorkspacesModal((prev) => !prev);
   }, []);
 
   const onCreateWorkspace = useCallback(
@@ -112,16 +125,16 @@ const Workspace: VFC = () => {
   //   console.log('data check back to login: ', data);
   //   return <Redirect to="/login" />;
   // }
-  console.log(' :', UserData);
+
   return (
     <div>
       <Header>
         <span onClick={onClickUserProfile}>
-          <ProfileImg src="../../img/leaf_toy.png" alt="fail to load profile" />
+          <ProfileImg src="/leaf.png" alt="fail to load profile" />
           {showUserMenu && (
             <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onClickUserProfile}>
               <ProfileModal>
-                <img src="../../img/leaf_toy.png" />
+                <img src="/leaf.png" />
                 <div>
                   <span id="profile-name">{UserData ? UserData.nickname : 'false'}</span>
                   <span id="profile-active">Active</span>
@@ -135,24 +148,34 @@ const Workspace: VFC = () => {
 
       <WorkspaceWrapper>
         <Workspaces>
-          {UserData !== false &&
-            UserData?.Workspaces?.map((ws) => {
-              return (
-                <Link key={ws.id} to={`/workspace/${ws.id}/channel/일반`}>
-                  <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
-                </Link>
-              );
-            })}
+          {UserData?.Workspaces?.map((ws) => {
+            return (
+              <Link key={ws.id} to={`/workspace/${ws.id}/channel/일반`}>
+                <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
+              </Link>
+            );
+          })}
           <AddButton onClick={onClickCreateWorkspace}>+</AddButton>
         </Workspaces>
         <Channels>
-          <WorkspaceName>Select</WorkspaceName>
-          <MenuScroll>menuScroll</MenuScroll>
+          <WorkspaceName onClick={toggleWorkspaceModal}>
+            {/* {UserData?.Workspaces.find((v)=>{})} */}
+            sleact
+          </WorkspaceName>
+          <MenuScroll>
+            <Menu show={showWorkspacesModal} onCloseModal={toggleWorkspaceModal} style={{ top: 95, left: 80 }}>
+              <WorkspaceModal>
+                <h2>Sleact</h2>
+                <button onClick={onClickAddChannel}>채널 만들기</button>
+                <button onClick={onLogout}>로그아웃</button>
+              </WorkspaceModal>
+            </Menu>
+          </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
-            <Route path="/workspace/channel" component={Channel} />
-            <Route path="/workspace/dm" component={DirectMessage} />
+            <Route path="/workspace/:workspace/channel/:channel" component={Channel} />
+            <Route path="/workspace/:workspace/dm/:id" component={DirectMessage} />
           </Switch>
         </Chats>
       </WorkspaceWrapper>
@@ -169,6 +192,11 @@ const Workspace: VFC = () => {
           <Button type="submit">생성하기</Button>
         </form>
       </Modal>
+      <CreateChannelModal
+        show={showCreateChannelModal}
+        onCloseModal={onCloseModal}
+        setShowCreateChannelModal={setShowCreateChannelModal}
+      ></CreateChannelModal>
     </div>
   );
 };

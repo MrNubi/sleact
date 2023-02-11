@@ -54,7 +54,7 @@ const Login = () => {
   console.log('datacheck login out: ', LoginData);
   if (LoginData) {
     console.log('datacheck login in: ', LoginData);
-    return <Redirect to="/workspace/channel" />;
+    return <Redirect to="/workspace/sleact/channel/일반" />;
   }
 
   return (
