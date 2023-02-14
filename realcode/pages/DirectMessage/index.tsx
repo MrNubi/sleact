@@ -25,17 +25,16 @@ const DirectMessage = () => {
       e.preventDefault();
       if (chat?.trim()) {
         axios
-          .post(`http://localhost:3095/api/worspaces/${workspace}/dms/${id}/chats`, {
+          .post(`/api/workspaces/${workspace}/dms/${id}/chats`, {
             content: chat,
           })
           .then((r) => {
+            console.log('r.succes  ', r);
             mutateChat(r.data);
             setChat('');
           })
           .catch(console.error);
       }
-
-      setChat('');
     },
     [chat],
   );
