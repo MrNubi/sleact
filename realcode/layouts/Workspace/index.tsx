@@ -1,7 +1,7 @@
 import Menu from '../../components/Menu';
 import loadable from '@loadable/component';
 import axios from 'axios';
-import React, { useCallback, useState, VFC } from 'react';
+import React, { useCallback, useEffect, useState, VFC } from 'react';
 import { Route, Switch, useParams } from 'react-router';
 import useSWR from 'swr';
 import fetcher from '../../utills/fetcher';
@@ -32,6 +32,7 @@ import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
 import ChannelList from '@components/ChannalList';
 import DMList from '@components/DMList/inex';
+import useSocket from '@hooks/useSocket';
 
 const Channel = loadable(() => import('../../pages/Channel'));
 const DirectMessage = loadable(() => import('../../pages/DirectMessage'));
@@ -62,6 +63,20 @@ const Workspace: VFC = () => {
   const [showCreateInviteChannel, setShowInviteChannel] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkpsace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
+  const [socket, disconnect] = useSocket(workspace);
+
+  useEffect(() => {
+    if (channelData && UserData && socket) {
+      console.log('socket :', socket);
+      socket.emit('login', { id: UserData.id, channels: channelData.map((v) => v.id) });
+    }
+  }, [socket, channelData, UserData]);
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+  }, [workspace, disconnect]);
+  // useEffect는 가끔 함수 안에서 안쓰더라도, 옵저빙하는 값으로서 []안에 넣어 줄 필요가 있음
 
   const onClickUserProfile = useCallback((e) => {
     e.stopPropagation();
@@ -112,7 +127,8 @@ const Workspace: VFC = () => {
     setShowWorkspacesModal((prev) => !prev);
   }, []);
 
-  const leafUrl = 'https://github.com/MrNubi/sleact/blob/master/realcode/img/leaf_toy.png?raw=true';
+  const leafUrl =
+    'https://raw.githubusercontent.com/MrNubi/realcode/master/img/leaf.png?token=GHSAT0AAAAAAB62DRICRO6KGN3WPCSU5S34Y7NFWXA';
   console.log('channelData: ', channelData, typeof channelData);
   const onCreateWorkspace = useCallback(
     (e) => {

@@ -29,7 +29,7 @@ const DirectMessage = () => {
             content: chat,
           })
           .then((r) => {
-            console.log('r.succes  ', r);
+            console.log('r.succes', r);
             mutateChat(r.data);
             setChat('');
           })
